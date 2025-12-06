@@ -8,6 +8,11 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -29,6 +34,8 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+
+import java.util.List;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -147,6 +154,10 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+
+    PathConstraints constraints =
+        new PathConstraints(3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
+
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -167,6 +178,23 @@ public class RobotContainer {
 
     // Switch to X pattern when X button is pressed
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller.a().onTrue(Commands.sequence(
+                AutoBuilder.followPath(
+                    new PathPlannerPath(
+                        createBottomStation(),
+                        constraints,
+                        null,
+                        new GoalEndState(0.0, Rotation2d.fromDegrees(0))))));
+
+    controller.a().onTrue(Commands.sequence(
+        AutoBuilder.followPath(
+            new PathPlannerPath(
+                createTopStation(),
+                constraints,
+                null,
+                new GoalEndState(0.0, Rotation2d.fromDegrees(0))))));
+
+
 
     // Reset gyro to 0° when B button is pressed
     controller
@@ -188,4 +216,18 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
+
+  public List<Waypoint> createBottomStation() {
+    return PathPlannerPath.waypointsFromPoses(
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(1.198, 7, Rotation2d.fromDegrees(0)));
+  }
+
+  public List<Waypoint> createTopStation() {
+    return PathPlannerPath.waypointsFromPoses(
+        new Pose2d(2.19, 4.18, Rotation2d.fromDegrees(0)),
+        new Pose2d(1.113, 1, Rotation2d.fromDegrees(0)));
+  }
+
+
 }
