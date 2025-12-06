@@ -186,7 +186,7 @@ public class RobotContainer {
                         null,
                         new GoalEndState(0.0, Rotation2d.fromDegrees(0))))));
 
-    controller.a().onTrue(Commands.sequence(
+    controller.y().onTrue(Commands.sequence(
         AutoBuilder.followPath(
             new PathPlannerPath(
                 createTopStation(),
